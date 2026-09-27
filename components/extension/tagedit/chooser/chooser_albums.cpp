@@ -13,6 +13,7 @@
 #include "chooser_albums.h"
 
 #include "../config.h"
+#include "../utilities.h"
 
 BoCA::ChooserAlbums::ChooserAlbums() : Chooser("Albums")
 {
@@ -258,7 +259,7 @@ Void BoCA::ChooserAlbums::OnModifyTrack(const Track &track)
 
 			/* Update basic info.
 			 */
-			if (!clearAlbumArtist) mTrackInfo.SetOtherInfo(INFO_ALBUMARTIST, info.artist);
+			if (!clearAlbumArtist && mTrackInfo.GetOtherInfo(INFO_ALBUMARTIST) != info.artist) mTrackInfo.SetOtherInfo(INFO_ALBUMARTIST, info.artist);
 
 			if (info.artist != origInfo.artist)
 			{
@@ -292,11 +293,14 @@ Void BoCA::ChooserAlbums::OnModifyTrack(const Track &track)
 
 			while (keys[index] != NIL)
 			{
-				String	 key = keys[index++];
+				String			 key	   = keys[index++];
+				const Array<String>	&newValues = info.GetOtherInfoList(key);
 
-				if (info.GetOtherInfo(key) == origInfo.GetOtherInfo(key)) continue;
+				/* Skip keys whose value list did not change.
+				 */
+				if (TagUtilities::HaveSameValues(newValues, origInfo.GetOtherInfoList(key))) continue;
 
-				mTrackInfo.SetOtherInfo(key, info.GetOtherInfo(key));
+				TagUtilities::ReplaceOtherInfo(mTrackInfo, key, newValues);
 			}
 
 			mTrack.SetInfo(mTrackInfo);
@@ -483,12 +487,7 @@ Void BoCA::ChooserAlbums::AddToAlbumList(const Track &track)
 
 	/* Copy album artist.
 	 */
-	foreach (const String &pair, trackInfo.other)
-	{
-		String	 key = pair.Head(pair.Find(":"));
-
-		if (key == INFO_ALBUMARTIST) albumInfo.other.Add(pair);
-	}
+	TagUtilities::ReplaceOtherInfo(albumInfo, INFO_ALBUMARTIST, trackInfo.GetOtherInfoList(INFO_ALBUMARTIST));
 
 	album.SetInfo(albumInfo);
 
@@ -565,25 +564,22 @@ Void BoCA::ChooserAlbums::UpdateAlbum(const Track &track)
 		albumInfo.label		= trackInfo.label;
 
 		/* Copy other text info.
+		 *
+		 * Replace the album's values of each key, so that the album
+		 * Info holds exactly the track's current values instead of
+		 * piling up on every update.
 		 */
-		foreach (const String &pair, trackInfo.other)
-		{
-			String	 key = pair.Head(pair.Find(":"));
+		static String	 keys[] = { INFO_ALBUMARTIST, INFO_BAND,	 INFO_CONDUCTOR,     INFO_COMPOSER,
+					    INFO_LYRICIST,    INFO_REMIXER,
 
-			if (key == INFO_ALBUMARTIST   || key == INFO_BAND	   ||
-			    key == INFO_CONDUCTOR     || key == INFO_COMPOSER      ||
-			    key == INFO_LYRICIST      || key == INFO_REMIXER	   ||
+					    INFO_MEDIATYPE,   INFO_CATALOGNUMBER, INFO_BARCODE,
 
-			    key == INFO_MEDIATYPE     || key == INFO_CATALOGNUMBER ||
-			    key == INFO_BARCODE	      ||
+					    INFO_ORIG_ARTIST, INFO_ORIG_ALBUM,    INFO_ORIG_LYRICIST, INFO_ORIG_YEAR,
 
-			    key == INFO_ORIG_ARTIST   || key == INFO_ORIG_ALBUM    ||
-			    key == INFO_ORIG_LYRICIST || key == INFO_ORIG_YEAR     ||
+					    INFO_WEB_ARTIST,  INFO_WEB_PUBLISHER, INFO_WEB_RADIO,     INFO_WEB_SOURCE,
+					    INFO_WEB_COPYRIGHT, INFO_WEB_COMMERCIAL, NIL };
 
-			    key == INFO_WEB_ARTIST    || key == INFO_WEB_PUBLISHER ||
-			    key == INFO_WEB_RADIO     || key == INFO_WEB_SOURCE    ||
-			    key == INFO_WEB_COPYRIGHT || key == INFO_WEB_COMMERCIAL) albumInfo.other.Add(pair);
-		}
+		for (Int i = 0; keys[i] != NIL; i++) TagUtilities::ReplaceOtherInfo(albumInfo, keys[i], trackInfo.GetOtherInfoList(keys[i]));
 
 		album.SetInfo(albumInfo);
 

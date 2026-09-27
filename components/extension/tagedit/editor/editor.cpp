@@ -11,9 +11,14 @@
   * WARRANTIES OF MERCHANTIBILITY AND FITNESS FOR A PARTICULAR PURPOSE. */
 
 #include "editor.h"
+#include "valuelist.h"
+#include "../utilities.h"
 
 BoCA::Editor::Editor(const String &title) : Layer(title)
 {
+	ignoreSelect   = False;
+	activeValueBox = NIL;
+
 	allowTrackChangeByArrowKey.Connect(True);
 	allowTrackRemoveByDeleteKey.Connect(True);
 }
@@ -32,4 +37,42 @@ Void BoCA::Editor::OnSelectAlbum(const Track &track)
 
 Void BoCA::Editor::OnSelectNone()
 {
+}
+
+/* Called when a field with several values requests its value list.
+ * ----
+ * Opens the value list dialog and applies each change at once.
+ */
+Void BoCA::Editor::OnRequestValueList(MultiValueEditBox *box)
+{
+	ValueListDialog	 dialog(box->GetLabelText(), box->GetValues());
+
+	dialog.onChangeValues.Connect(&Editor::OnChangeValues, this);
+
+	activeValueBox = box;
+
+	dialog.ShowDialog();
+
+	activeValueBox = NIL;
+}
+
+Void BoCA::Editor::OnChangeValues(const Array<String> &values)
+{
+	if (activeValueBox == NIL) return;
+
+	Info	 info = track.GetInfo();
+
+	TagUtilities::ReplaceOtherInfo(info, activeValueBox->GetKey(), values);
+
+	activeValueBox->SetValues(info.GetOtherInfoList(activeValueBox->GetKey()));
+
+	track.SetInfo(info);
+
+	/* Prevent re-selecting entry and emit onModifyTrack signal.
+	 */
+	ignoreSelect = True;
+
+	onModifyTrack.Emit(track);
+
+	ignoreSelect = False;
 }
