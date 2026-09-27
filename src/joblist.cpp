@@ -14,7 +14,6 @@
 #include <config.h>
 #include <utilities.h>
 
-#include <cddb/cddb.h>
 
 #include <gui/layer_tooltip.h>
 
@@ -1210,7 +1209,7 @@ String freac::JobList::GetEntryText(const Track &track)
 			jlEntry.Append(drives.Get(track.drive));
 		}
 
-		else if (field == "<discid>")	   jlEntry.Append(CDDB::DiscIDToString(track.discid));
+		else if (field == "<discid>")	   jlEntry.Append(DiscMetadata::FreedbDiscIDToString(track.discid));
 		else if (field == "<isrc>")	   jlEntry.Append(info.isrc);
 		else if (field == "<file>")	   jlEntry.Append(track.fileName);
 

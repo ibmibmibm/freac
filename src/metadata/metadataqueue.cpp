@@ -156,7 +156,7 @@ Int freac::MetadataQueue::AddQueries(const Array<DiscMetadata> &discs)
 
 		for (Int i = 0; i < queries.Length() && !found; i++)
 		{
-			if (MetadataLookup::GetDiscKey(queries.GetNth(i).disc) == key) found = True;
+			if (MetadataLookup::IsSameQueuedDisc(MetadataLookup::GetDiscKey(queries.GetNth(i).disc), key)) found = True;
 		}
 
 		if (found) continue;

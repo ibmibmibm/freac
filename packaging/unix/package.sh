@@ -50,6 +50,7 @@ cp $PREFIX/lib/boca/boca_deviceinfo_*.1.0.so freac/boca/
 cp $PREFIX/lib/boca/boca_dsp_*.1.0.so freac/boca/
 cp $PREFIX/lib/boca/boca_encoder_*.1.0.so freac/boca/
 cp $PREFIX/lib/boca/boca_extension_*.1.0.so freac/boca/
+cp $PREFIX/lib/boca/boca_metadata_*.1.0.so freac/boca/
 cp $PREFIX/lib/boca/boca_output_*.1.0.so freac/boca/
 cp $PREFIX/lib/boca/boca_playlist_*.1.0.so freac/boca/
 cp $PREFIX/lib/boca/boca_tagger_*.1.0.so freac/boca/

@@ -13,7 +13,6 @@
 #include <utilities.h>
 #include <config.h>
 
-#include <cddb/cddb.h>
 
 #ifdef __WIN32__
 #	include <windows.h>
@@ -373,7 +372,7 @@ String freac::Utilities::GetOutputFileName(const Track &track, const String &fil
 		if (shortOutFileName.Contains(kAlbumPattern))	 shortOutFileName.Replace(kAlbumPattern, BoCA::Utilities::ReplaceIncompatibleCharacters(info.album.Length() > 0 ? info.album : i18n->TranslateString("unknown album")));
 		if (shortOutFileName.Contains(kGenrePattern))	 shortOutFileName.Replace(kGenrePattern, BoCA::Utilities::ReplaceIncompatibleCharacters(info.genre.Length() > 0 ? info.genre : i18n->TranslateString("unknown genre")));
 		if (shortOutFileName.Contains(kYearPattern))	 shortOutFileName.Replace(kYearPattern, BoCA::Utilities::ReplaceIncompatibleCharacters(info.year > 0 ? String::FromInt(info.year) : i18n->TranslateString("unknown year")));
-		if (shortOutFileName.Contains(kDiscIDPattern))	 shortOutFileName.Replace(kDiscIDPattern, CDDB::DiscIDToString(track.discid));
+		if (shortOutFileName.Contains(kDiscIDPattern))	 shortOutFileName.Replace(kDiscIDPattern, DiscMetadata::FreedbDiscIDToString(track.discid));
 		if (shortOutFileName.Contains(kFileTypePattern)) shortOutFileName.Replace(kFileTypePattern, fileExtension.ToUpper());
 
 		/* Replace <track> pattern.
@@ -689,7 +688,7 @@ String freac::Utilities::GetPlaylistFileName(const BoCA::Config *config, const T
 		if (shortOutFileName.Contains(kAlbumPattern))  shortOutFileName.Replace(kAlbumPattern, BoCA::Utilities::ReplaceIncompatibleCharacters(info.album.Length() > 0 ? info.album : i18n->TranslateString("unknown album")));
 		if (shortOutFileName.Contains(kGenrePattern))  shortOutFileName.Replace(kGenrePattern, BoCA::Utilities::ReplaceIncompatibleCharacters(info.genre.Length() > 0 ? info.genre : i18n->TranslateString("unknown genre")));
 		if (shortOutFileName.Contains(kYearPattern))   shortOutFileName.Replace(kYearPattern, BoCA::Utilities::ReplaceIncompatibleCharacters(info.year > 0 ? String::FromInt(info.year) : i18n->TranslateString("unknown year")));
-		if (shortOutFileName.Contains(kDiscIDPattern)) shortOutFileName.Replace(kDiscIDPattern, CDDB::DiscIDToString(track.discid));
+		if (shortOutFileName.Contains(kDiscIDPattern)) shortOutFileName.Replace(kDiscIDPattern, DiscMetadata::FreedbDiscIDToString(track.discid));
 
 		/* Replace <disc> pattern.
 		 */

@@ -13,7 +13,9 @@
 #include <jobs/joblist/addfiles.h>
 #include <jobs/joblist/removeall.h>
 
-#include <dialogs/cddb/query.h>
+#include <dialogs/metadata/query.h>
+
+#include <metadata/metadatalookup.h>
 
 #include <config.h>
 #include <utilities.h>
@@ -88,8 +90,8 @@ Error freac::JobAddFiles::Perform()
 	BoCA::JobList	*joblist = BoCA::JobList::Get();
 	BoCA::I18n	*i18n	 = BoCA::I18n::Get();
  
-	Array<CDDBInfo>	 cdInfos;
-	Array<Bool>	 cddbsQueried;
+	Array<DiscMetadata>	 records;
+	Array<Bool>		 recordsQueried;
 
 	/* Get number of threads to use.
 	 */
@@ -151,19 +153,23 @@ Error freac::JobAddFiles::Perform()
 
 			if (track != NIL && !worker->GetErrorState() && !abort)
 			{
-				/* Query CDDB and update track info.
+				/* Look up metadata and update track info.
 				 */
-				if (track.isCDTrack && configuration->GetIntValue(Config::CategoryFreedbID, Config::FreedbAutoQueryID, Config::FreedbAutoQueryDefault))
+				if (track.isCDTrack && configuration->GetIntValue(Config::CategoryMetadataID, Config::MetadataAutoQueryID, Config::MetadataAutoQueryDefault))
 				{
-					if (!cddbsQueried.Get(track.discid))
+					if (!recordsQueried.Get(track.discid))
 					{
-						cdInfos.Add(cddbQueryDlg::QueryCDDB(track, True), track.discid);
-						cddbsQueried.Add(True, track.discid);
+						DiscMetadata	 record;
+
+						if (MetadataQueryDlg::QueryDisc(track, True, record) != LOOKUP_FOUND) record = DiscMetadata();
+
+						records.Add(record, track.discid);
+						recordsQueried.Add(True, track.discid);
 					}
 
-					const CDDBInfo	&cdInfo = cdInfos.Get(track.discid);
+					const DiscMetadata	&record = records.Get(track.discid);
 
-					if (cdInfo != NIL) cdInfo.UpdateTrack(track);
+					if (record.provider != NIL) MetadataLookup::ApplyRecord(track, record);
 				}
 
 				/* Add track(s) to joblist.
@@ -273,7 +279,7 @@ Int freac::JobAddFilesWorker::Run()
 	{
 		/* Add disc ID to CD tracks.
 		 */
-		if (track.isCDTrack) track.discid = CDDB::DiscIDFromMCDI(track.GetInfo().mcdi);
+		if (track.isCDTrack) track.discid = DiscMetadata::GetFreedbDiscID(track.GetInfo().mcdi);
 
 		/* Extract title info from path names.
 		 */
