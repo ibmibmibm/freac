@@ -210,3 +210,22 @@ Void BoCA::TagUtilities::FillGenreList(List *list)
 	list->AddEntry("Vocal");
 	list->AddEntry("World Music");
 }
+
+/* Compare two value lists including their order.
+ */
+Bool BoCA::TagUtilities::HaveSameValues(const Array<String> &values1, const Array<String> &values2)
+{
+	if (values1.Length() != values2.Length()) return False;
+
+	for (Int i = 0; i < values1.Length(); i++) if (values1.GetNth(i) != values2.GetNth(i)) return False;
+
+	return True;
+}
+
+/* Replace all values of a key; empty values are dropped.
+ */
+Void BoCA::TagUtilities::ReplaceOtherInfo(Info &info, const String &key, const Array<String> &values)
+{
+	info.SetOtherInfo(key, NIL);
+	info.AddOtherInfo(key, values);
+}
